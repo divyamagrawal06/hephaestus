@@ -1,3 +1,44 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+
+# frontend (next.js) build artifacts and caches
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/dist/
+frontend/.turbo/
+frontend/.vercel/
+frontend/coverage/
+frontend/.cache/
+frontend/.eslintcache
+frontend/*.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.pnpm-debug.log*
+
+# frontend-codex build artifacts
+frontend-codex/node_modules/
+frontend-codex/dist/
+
+# frontend-codex-2 build artifacts
+frontend-codex-2/node_modules/
+frontend-codex-2/dist/
+
+# frontend-gemini build artifacts
+frontend-gemini/node_modules/
+frontend-gemini/dist/
+
+# generated / intermediate 3D model files
+frontend-gemini/assets/
+
+# playwright session data and test output
+.playwright-cli/
+output/
+
+# temp files
+README-temp.md
+
+# local reference material
+_reference/
