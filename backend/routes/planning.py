@@ -2,20 +2,20 @@
 
 from __future__ import annotations
 
-from uuid import uuid4
-
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from backend.contracts import IncidentOptimizeRequest, IncidentPlanRequest
 from backend.models import ResponseEnvelope, build_envelope
+from backend.security import require_api_key
 from backend.services import PipelineService, get_pipeline_service
 from backend.storage import IncidentNotFoundError
 
-router = APIRouter(tags=["planning"])
+router = APIRouter(tags=["planning"], dependencies=[Depends(require_api_key)])
 
 
 @router.post("/incident/plan", response_model=ResponseEnvelope)
 def plan_incident(
+    request_context: Request,
     request: IncidentPlanRequest,
     service: PipelineService = Depends(get_pipeline_service),
 ) -> ResponseEnvelope:
@@ -31,7 +31,7 @@ def plan_incident(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
     return build_envelope(
-        request_id=f"req-{uuid4().hex[:10]}",
+        request_id=request_context.state.request_id,
         payload=payload,
         confidence=confidence,
         warnings=warnings,
@@ -40,6 +40,7 @@ def plan_incident(
 
 @router.post("/incident/optimize", response_model=ResponseEnvelope)
 def optimize_incident(
+    request_context: Request,
     request: IncidentOptimizeRequest,
     service: PipelineService = Depends(get_pipeline_service),
 ) -> ResponseEnvelope:
@@ -55,7 +56,7 @@ def optimize_incident(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
     return build_envelope(
-        request_id=f"req-{uuid4().hex[:10]}",
+        request_id=request_context.state.request_id,
         payload=payload,
         confidence=confidence,
         warnings=warnings,

@@ -15,7 +15,7 @@ class BackendSettings(BaseModel):
     app_version: str = Field(default="0.1.0")
     environment: str = Field(default=getenv("HEPHAESTUS_ENV", "dev"))
 
-    api_key: str = Field(default=getenv("HEPHAESTUS_API_KEY", ""))
+    api_key: str = Field(default=getenv("HEPHAESTUS_API_KEY", "hephaestus-dev-key"))
     postgres_dsn: str = Field(default=getenv("HEPHAESTUS_POSTGRES_DSN", ""))
     redis_url: str = Field(default=getenv("HEPHAESTUS_REDIS_URL", ""))
     ollama_url: str = Field(default=getenv("HEPHAESTUS_OLLAMA_URL", ""))

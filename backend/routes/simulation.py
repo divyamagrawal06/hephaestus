@@ -2,20 +2,20 @@
 
 from __future__ import annotations
 
-from uuid import uuid4
-
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from backend.contracts import IncidentSimulateRequest
 from backend.models import ResponseEnvelope, build_envelope
+from backend.security import require_api_key
 from backend.services import PipelineService, get_pipeline_service
 from backend.storage import IncidentNotFoundError
 
-router = APIRouter(tags=["simulation"])
+router = APIRouter(tags=["simulation"], dependencies=[Depends(require_api_key)])
 
 
 @router.post("/incident/simulate", response_model=ResponseEnvelope)
 def simulate_incident(
+    request_context: Request,
     request: IncidentSimulateRequest,
     service: PipelineService = Depends(get_pipeline_service),
 ) -> ResponseEnvelope:
@@ -31,7 +31,7 @@ def simulate_incident(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
     return build_envelope(
-        request_id=f"req-{uuid4().hex[:10]}",
+        request_id=request_context.state.request_id,
         payload=payload,
         confidence=confidence,
         warnings=warnings,

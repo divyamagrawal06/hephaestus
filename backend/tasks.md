@@ -51,11 +51,11 @@ This file is the execution loop for completing the backend to the scope defined 
 
 ## Stage 4 - Reliability + Security
 
-- [ ] Add API key auth guard for write endpoints (MVP).
-- [ ] Add request-id middleware and structured logging hooks.
-- [ ] Add centralized error handling with envelope responses.
-- [ ] Add input validation edge-case handling and clear warning paths.
-- [ ] Create stage-4.md and commit stage.
+- [x] Add API key auth guard for write endpoints (MVP).
+- [x] Add request-id middleware and structured logging hooks.
+- [x] Add centralized error handling with envelope responses.
+- [x] Add input validation edge-case handling and clear warning paths.
+- [x] Create stage-4.md and commit stage.
 
 ## Stage 5 - Testing + Hardening
 

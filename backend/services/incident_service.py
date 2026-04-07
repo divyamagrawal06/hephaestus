@@ -153,7 +153,13 @@ class IncidentService:
             "assumptions": ["all plan scores are comparable after scalar normalization"],
             "evidence_refs": ["plan-stage", "constraint-input"],
         }
-        warnings = [] if feasible else ["no feasible plans found; fallback recommendation selected"]
+        warnings = []
+        if not request.constraints.available_crew:
+            warnings.append("available_crew not provided; skill feasibility used permissive defaults")
+        if not request.constraints.spare_parts_inventory:
+            warnings.append("spare_parts_inventory not provided; part feasibility used permissive defaults")
+        if not feasible:
+            warnings.append("no feasible plans found; fallback recommendation selected")
         confidence = 0.83 if feasible else 0.55
         self.repository.save_stage(request.incident_id, "optimize", payload, confidence, warnings)
         return payload, confidence, warnings

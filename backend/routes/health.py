@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from uuid import uuid4
-
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
 from backend.config import dependency_health_snapshot, get_settings
 from backend.models import ResponseEnvelope, build_envelope
@@ -13,7 +11,7 @@ router = APIRouter(tags=["health"])
 
 
 @router.get("/health", response_model=ResponseEnvelope)
-def health_check() -> ResponseEnvelope:
+def health_check(request: Request) -> ResponseEnvelope:
     """Return service and dependency configuration health."""
     settings = get_settings()
     dependencies = dependency_health_snapshot(settings)
@@ -31,7 +29,7 @@ def health_check() -> ResponseEnvelope:
     }
 
     return build_envelope(
-        request_id=f"req-{uuid4().hex[:10]}",
+        request_id=request.state.request_id,
         payload=payload,
         confidence=1.0 if not warnings else 0.75,
         warnings=warnings,
