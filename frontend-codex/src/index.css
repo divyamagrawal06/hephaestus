@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  background-color: #0a0a0f;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --forge-grid: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.06) 1px, transparent 0);
+  --forge-grid-size: 52px 52px;
+  --forge-sheen: linear-gradient(120deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #0a0a0f;
+  color: #e9e3d4;
+  overflow-x: hidden;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+#root {
+  min-height: 100vh;
+  position: relative;
+  isolation: isolate;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.grain-overlay::before {
+  content: "";
+  position: fixed;
+  inset: -10%;
+  background-image: url("data:image/svg+xml,%3Csvg width='140' height='140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.28'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+  z-index: 40;
+  animation: grain 9s steps(8) infinite;
+}
+
+.forge-grid {
+  background-image: var(--forge-grid);
+  background-size: var(--forge-grid-size);
+  mask-image: radial-gradient(circle at 50% 0%, black 0%, transparent 75%);
+}
+
+.text-gradient {
+  background: linear-gradient(110deg, #fff0d6, #f2c96c 40%, #ff6a2a 70%, #3ef0d6);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.glow-text {
+  text-shadow: 0 0 18px rgba(255, 106, 42, 0.3), 0 0 60px rgba(255, 106, 42, 0.18);
+}
+
+.section-divider {
+  background: linear-gradient(90deg, rgba(255, 106, 42, 0.22), rgba(62, 240, 214, 0.28), rgba(255, 106, 42, 0.22));
+  filter: blur(0.2px);
+}
+
+.cursor-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 30;
+}
+
+.split-char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+.forge-rail {
+  display: flex;
+  gap: 24px;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.forge-rail span {
+  text-transform: uppercase;
+  letter-spacing: 0.5em;
+  font-size: 12px;
+  color: rgba(231, 226, 215, 0.6);
+}
+
+.button-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.button-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--forge-sheen);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.button-glow:hover::after {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
