@@ -1,3 +1,9 @@
 """
 Data layer — schemas, loaders, validators, synthetic data generation, feature store.
+
+Usage:
+    from ml.aegis.data.schemas import AssetMaster, TelemetryReading, AgentOutput, ...
+    from ml.aegis.data.loaders import load_telemetry, load_asset_master, ...
+    from ml.aegis.data.validators import check_missingness, check_sensor_freeze, ...
+    from ml.aegis.data.synthetic_generator import generate_all
 """
