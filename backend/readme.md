@@ -1,55 +1,37 @@
 # hephaestus backend
 
-The backend is the system-control layer for Hephaestus. It exposes APIs, orchestrates agent workflows, applies governance checks, and returns auditable decision packages to the frontend.
+The backend is the execution and control layer for Hephaestus. It exposes APIs, runs the incident workflow, applies governance checks, and returns auditable decision payloads for the frontend and downstream consumers.
 
-## Purpose
+## What the backend currently does
 
-The backend does not just serve model predictions. It closes the operational decision loop:
+The backend is functional and supports both step-by-step and single-call incident processing.
 
-1. Ingest data.
-2. Run quality and risk analysis.
-3. Generate and optimize intervention plans.
-4. Simulate expected impact.
-5. Return stakeholder-ready outputs (operator, manager, audit).
+1. Creates an incident context from ingest input.
+2. Produces risk output for the incident.
+3. Produces intervention plan options.
+4. Optimizes plans under provided constraints.
+5. Simulates projected outcomes.
+6. Generates report payloads including audit and governance traces.
 
-## Current Implementation Status
+## Implemented capabilities
 
-Implemented in this backend module now:
-
-- FastAPI app with registered routes for:
-	- /health
-	- /ingest/batch
-	- /risk/analyze
-	- /incident/plan
-	- /incident/optimize
-	- /incident/simulate
-	- /incident/{id}/report
-	- /incident/run
-- Shared response envelope across success and error responses.
-- In-memory incident repository supporting full workflow state.
-- Pipeline service that coordinates staged execution and single-call full run.
-- Governance checks with confidence-floor escalation.
-- Deterministic fallback mode when ML agent runtime is unavailable.
-- API key auth guard on write endpoints via x-api-key.
+- FastAPI application bootstrapped with route registration.
+- Standard response envelope for success and error responses.
 - Request-id middleware with response header propagation.
-- Structured request logging hooks.
-- Centralized exception handling that preserves envelope schema.
-- Backend tests:
-	- Unit tests for incident service lifecycle.
-	- Integration tests for write auth, staged API flow, and single-call pipeline flow.
+- Structured request logging.
+- Centralized exception handling that preserves the envelope format.
+- API key protection for write endpoints via x-api-key.
+- In-memory incident repository with:
+  - stage snapshots
+  - event timeline
+  - confidence trail
+  - governance trail
+- Incident service for staged workflow operations.
+- Pipeline service for full workflow orchestration.
+- Governance service with confidence-floor checks and escalation verdicts.
+- Deterministic fallback mode when ML runtime is unavailable.
 
-## What This Service Owns
-
-- FastAPI request handling and endpoint contracts.
-- Request/response normalization with traceable metadata.
-- Orchestration entrypoint into the multi-agent pipeline.
-- Persistence and retrieval of incidents, plans, simulations, and reports.
-- Governance gates (confidence floor, policy validation, human-in-the-loop routing).
-- Sync/async split for low-latency APIs versus heavy compute tasks.
-
-## Current Backend Surface
-
-Planned endpoint surface:
+## Implemented API surface
 
 - GET /health
 - POST /ingest/batch
@@ -58,106 +40,66 @@ Planned endpoint surface:
 - POST /incident/optimize
 - POST /incident/simulate
 - GET /incident/{id}/report
+- POST /incident/run
 
-Standard response envelope (for every endpoint):
+Standard envelope:
 
 ```json
 {
-	"request_id": "req-9f30f8",
-	"status": "success",
-	"timestamp": "2026-04-07T11:25:00Z",
-	"payload": {},
-	"confidence": 0.87,
-	"warnings": []
+  "request_id": "req-9f30f8",
+  "status": "success",
+  "timestamp": "2026-04-07T11:25:00Z",
+  "payload": {},
+  "confidence": 0.87,
+  "warnings": []
 }
 ```
 
-## Runtime Architecture
+## Current architecture
 
-### API path (synchronous)
+- routes/: HTTP handlers only
+- services/: business logic and orchestration
+- storage/: repository abstraction (current implementation: in-memory)
+- config/: settings and dependency status helpers
+- models.py and contracts.py: API and workflow contracts
+- security.py: API key guard
+- tests/: unit and integration coverage
 
-Use synchronous requests for interactive operations:
+## Stage documentation
 
-- health checks
-- recent incident fetch
-- light planning calls
+All stage handoff notes are now stored in:
 
-### worker path (asynchronous)
+- backend/comments/stage-1.md
+- backend/comments/stage-2.md
+- backend/comments/stage-3.md
+- backend/comments/stage-4.md
+- backend/comments/stage-5.md
 
-Route heavy tasks to workers:
+## Test status
 
-- large batch ingest
-- model retraining/inference at fleet scale
-- Monte Carlo scenario batches
-- report export generation
+Current backend tests pass for:
 
-Recommended queue model: Redis + Celery (or RQ) with idempotent job IDs.
+- service lifecycle behavior
+- write endpoint authentication
+- staged incident API flow
+- single-call pipeline API flow
 
-## Scaling Strategy
+## Known current limits
 
-### stage 1: MVP and demo scale
+- Persistence is in-memory, not PostgreSQL yet.
+- Risk/planning/simulation outputs are deterministic fallback logic until full ML orchestration is wired.
+- Role-based authorization is not implemented yet.
 
-- Single API instance with one worker pool.
-- PostgreSQL primary + Redis.
-- Synthetic dataset replay support.
-
-### stage 2: team usage scale
-
-- Stateless API pods behind a load balancer.
-- Dedicated queues by workload type:
-	- ingest
-	- inference
-	- simulation
-	- reporting
-- Connection pooling for PostgreSQL.
-- Request-level tracing across API -> agents -> storage.
-
-### stage 3: production multi-site scale
-
-- Horizontal API autoscaling by latency/error SLOs.
-- Worker autoscaling by queue depth and job age.
-- PostgreSQL partitioning for high-volume telemetry and incident history.
-- Read replicas for analytics-heavy dashboards.
-- Optional TimescaleDB extension for time-series performance.
-- Caching layer for frequently requested incident summaries.
-
-## Product Needs As Development Continues
-
-- API versioning before external integrations (v1, v2 contracts).
-- Durable event schema for agent handoffs and audit replay.
-- Policy profile versioning for governance decisions.
-- Role-aware authorization (operator, planner, manager, auditor).
-- Reliability controls:
-	- retries with exponential backoff
-	- circuit-breaker on low-confidence branches
-	- graceful degradation on partial agent failure
-- Observability baseline:
-	- structured logs with request_id and context_id
-	- tracing spans per agent hop
-	- metrics for latency, queue depth, confidence, policy violations
-- Data connector abstraction for future SCADA/historian ingestion.
-
-## Backend Folder Layout
-
-```text
-backend/
-	app.py                # FastAPI application entrypoint
-	config/               # Runtime settings and environment wiring
-	routes/               # HTTP route modules
-	storage/              # Persistence adapters and repositories
-```
-
-## Local Development
+## Local development
 
 ```bash
 pip install -r ../ml/requirements.txt
 uvicorn backend.app:app --reload
 ```
 
-## Definition Of Backend Done (MVP)
+## Next backend upgrades
 
-- Endpoints respond with the standard envelope.
-- Pipeline request can traverse ingest -> risk -> plan -> optimize -> simulate -> report.
-- Each step stores confidence, assumptions, and evidence references.
-- Governance can halt low-confidence runs and return actionable warnings.
-- Integration test covers one full synthetic incident lifecycle.
+- Replace in-memory storage with PostgreSQL repositories.
+- Connect to executable ML orchestrator outputs from ml/aegis agents.
+- Add policy profile versioning and richer governance rules.
+- Add role-based access and production auth strategy.
