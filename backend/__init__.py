@@ -1,0 +1,3 @@
+"""
+Hephaestus Backend — FastAPI Application
+"""
