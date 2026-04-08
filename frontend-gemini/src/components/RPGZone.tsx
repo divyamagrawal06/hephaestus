@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, Activity, PackageSearch, ShieldCheck } from "lucide-react";
+import { ZeusBustScene } from "./ZeusBust";
 
 type Zone = "fleet" | "incident" | "simulation" | "audit" | null;
 
@@ -153,6 +154,9 @@ export const RPGZone = () => {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full border-4 border-neon/30 bg-neon/5 shadow-[0_0_100px_rgba(62,240,214,0.2)]" />
         </div>
       </div>
+
+      {/* Zeus Bust 3D Model - Center of Command Zone */}
+      <ZeusBustScene />
 
       <div ref={containerRef} className="relative z-10 w-full h-full max-w-7xl mx-auto">
         {zones.map((zone) => {
